@@ -27,11 +27,19 @@ simulated hardware bus and `std/` library that `tulpa` uses on a desktop. No ser
 | **Explore** | a full workspace: editor with live diagnostics and completion, REPL, state-machine diagrams, contract fuzzing (`check`) and `define_test!` runner, 10 example programs, a searchable language reference |
 | **Live instruments** | `tlm::plot(name, value, t)` draws animated charts under the output |
 | **Progress** | XP and levels, streaks, study time, skill breakdown (Syntax / Programming / Systems / Robotics), 14 achievements, notes with each lesson's takeaways |
-| **Feel** | animated course map, progress rings and celebrations; native haptics on Android/iOS (Capacitor Haptics) and vibration on the web; respects reduced motion |
+| **The Tutor** | a robotic-raven mascot who greets you, cheers passed exercises, reacts to mistakes and delivers hints (poses in `assets/brand/`) |
+| **Feel** | animated course map, progress rings, confetti, sparks, ripples, scroll reveals and celebrations; haptic ticks as XP counts up; native haptics on Android/iOS (Capacitor Haptics) and vibration on the web; respects reduced motion |
 
 Modules: Getting Started · Syntax & Basics · Data Types & Structures · Functions & Modules ·
 Control Flow & Logic · Advanced Features · Object Oriented · Concurrency & Async ·
 Hardware & Embedded · Robotics & Simulation · Mastery Certification.
+
+## Brand
+
+`assets/brand/` holds the TulpaTutor logo and four Tutor poses (wave, think, celebrate,
+oops). The poses were generated to match the logo; full-resolution versions are in the
+Figma file *TulpaTutor mascot poses*. `scripts/make-brand.sh` regenerates every app icon,
+splash screen and web image from these.
 
 ## Layout
 
@@ -43,7 +51,7 @@ scripts/
   patch_tulpa_wasm.py   the wasm patch (behaviour-neutral on native targets)
   check-course.mjs  runs the whole course against the runtime (CI gate)
   tulpa-run.mjs     run a .rav file on the wasm runtime from Node
-  make-icons.sh     render assets/*.svg into Android/iOS icons and splash screens
+  make-brand.sh     build Android/iOS icons, splash screens and web brand images from assets/brand
 web/                the app (Vite, vanilla JS, CodeMirror 6, Capacitor)
   src/course/       lessons as Markdown (NN-module/NN-lesson.md), challenges.json, exam.json
   src/runtime/      core.js (loader), worker.js (runs programs off the UI thread), client.js

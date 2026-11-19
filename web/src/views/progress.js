@@ -3,6 +3,7 @@ import { icon } from "../ui/icons.js";
 import { donut, skillLegend, ring } from "../ui/widgets.js";
 import { countUp } from "../ui/fx.js";
 import { modules, lessons, lessonById, SKILLS } from "../course/index.js";
+import { tutorSay } from "../ui/tutor.js";
 import { state, levelInfo, streak, studyHours, lessonsDone, skillBreakdown, moduleProgress, ACHIEVEMENTS, today, courseProgress } from "../state.js";
 
 export function render(params) {
@@ -67,7 +68,11 @@ function badges() {
 
 function notes() {
   const done = lessons.filter((l) => state.lessons[l.id]?.done || state.notes[l.id]);
-  if (!done.length) return h(`<div class="card empty-state">${icon("book")}<p>Your notes and each completed lesson's key takeaways collect here.</p><a class="primary" href="#/home">Start learning</a></div>`);
+  if (!done.length) {
+    const e = h(`<div class="card empty-state"><a class="primary" href="#/home">Start learning</a></div>`);
+    e.prepend(tutorSay("wave", "Your notes and each finished lesson's key takeaways will collect here.", { size: 80 }));
+    return e;
+  }
   return h(`<div class="notes-list stagger">${done.map((l) => `<section class="card note-card">
     <a class="nc-head tap" href="#/lesson/${l.id}"><span>${l.module.number}.${l.index + 1}</span><b>${esc(l.title)}</b>${icon("chevron")}</a>
     ${state.notes[l.id] ? `<div class="my-note">${icon("note")}<p>${esc(state.notes[l.id])}</p></div>` : ""}

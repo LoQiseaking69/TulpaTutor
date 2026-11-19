@@ -2,6 +2,7 @@ import { h, esc } from "../ui/components.js";
 import { icon, logo } from "../ui/icons.js";
 import { confetti, haptic, countUp, motionReduced, pop } from "../ui/fx.js";
 import { state, update, pendingAchievements, levelInfo, streak } from "../state.js";
+import { mascot, brand, line } from "../ui/tutor.js";
 
 export function modal(inner, { onClose, cls = "" } = {}) {
   const el = h(`<div class="modal-wrap"><div class="modal ${cls}" role="dialog" aria-modal="true"></div></div>`);
@@ -24,7 +25,8 @@ export function modal(inner, { onClose, cls = "" } = {}) {
 
 export function showOnboarding() {
   const inner = h(`<div class="onboard">
-    <div class="ob-logo">${logo(96, "ob")}</div>
+    <div class="ob-hero"><img class="ob-logo-img" src="${brand("logo.webp")}" alt="TulpaTutor"></div>
+    <div class="ob-tutor"><span class="ob-mascot"></span><div class="bubble">Hi! I'm your <b>Tutor</b>. I'll cheer you on, nudge you when you're stuck, and keep score.</div></div>
     <h2>Welcome to <span class="grad">TulpaTutor</span></h2>
     <p>Learn Tulpa, the language for robotics and embedded systems, with the real runtime
        running right here. 60 interactive lessons, from your first <code>print</code> to
@@ -35,6 +37,7 @@ export function showOnboarding() {
     </label>
     <button class="primary big start">${icon("play")} Start learning</button>
   </div>`);
+  inner.querySelector(".ob-mascot").replaceWith(mascot("wave", { size: 92, anim: "idle" }));
   let goal = 1;
   inner.querySelectorAll(".seg-btn").forEach((b) => (b.onclick = () => {
     inner.querySelectorAll(".seg-btn").forEach((x) => x.classList.remove("on"));
@@ -57,8 +60,9 @@ export function showOnboarding() {
 export function celebrate({ title, subtitle, gained, levelUp, level, next, nextLabel = "Next lesson" }) {
   const L = levelInfo();
   const inner = h(`<div class="celebrate">
-    <div class="burst">${icon("star")}</div>
+    <div class="burst"><span class="burst-ring"></span><span class="cele-mascot"></span></div>
     <h2>${esc(title)}</h2>
+    <p class="tutor-line">“${esc(line("celebrate"))}”</p>
     <p class="sub">${esc(subtitle || "")}</p>
     <div class="cele-stats">
       <div><b class="xp-count">0</b><span>XP earned</span></div>
@@ -72,8 +76,9 @@ export function celebrate({ title, subtitle, gained, levelUp, level, next, nextL
       ${next ? `<button class="primary next">${esc(nextLabel)} ${icon("arrow")}</button>` : ""}
     </div>
   </div>`);
+  inner.querySelector(".cele-mascot").replaceWith(mascot("celebrate", { size: 130, anim: "hop" }));
   const m = modal(inner, { cls: "cele" });
-  countUp(inner.querySelector(".xp-count"), gained || 0, { ms: 1100 });
+  countUp(inner.querySelector(".xp-count"), gained || 0, { ms: 1100, ticks: true });
   requestAnimationFrame(() => {
     const bar = inner.querySelector(".bar i");
     bar.style.transition = "width 1.1s cubic-bezier(.2,.7,.2,1) .2s";
@@ -90,7 +95,7 @@ export function celebrate({ title, subtitle, gained, levelUp, level, next, nextL
 export function showAchievementToasts() {
   while (pendingAchievements.length) {
     const a = pendingAchievements.shift();
-    const t = h(`<div class="toast achievement">${icon(a.icon)}<div><b>Achievement unlocked</b><span>${esc(a.title)}: ${esc(a.desc)}</span></div></div>`);
+    const t = h(`<div class="toast achievement"><img class="toast-head" src="${brand("head.webp")}" alt=""><div><b>${icon(a.icon)} Achievement unlocked</b><span>${esc(a.title)}: ${esc(a.desc)}</span></div></div>`);
     let stack = document.querySelector(".toast-stack");
     if (!stack) { stack = document.createElement("div"); stack.className = "toast-stack"; document.body.appendChild(stack); }
     stack.appendChild(t);

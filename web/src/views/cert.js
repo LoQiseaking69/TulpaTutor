@@ -3,6 +3,7 @@ import { icon, logo } from "../ui/icons.js";
 import { confetti, haptic } from "../ui/fx.js";
 import { exam } from "../course/index.js";
 import { state, update, certUnlocked, grantXP, checkAchievements, save } from "../state.js";
+import { mascot, tutorSay, brand } from "../ui/tutor.js";
 
 const PASS = 80;
 const shuffle = (a) => a.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map((x) => x[1]);
@@ -56,7 +57,8 @@ function start(box, intro) {
       dispatchEvent(new HashChangeEvent("hashchange"));
     } else {
       haptic("error");
-      bar.innerHTML = `<div>${icon("x")} <b>${score}%</b>: not quite (${PASS}% needed). Review the lessons behind the questions you missed and try again.</div><a class="primary" href="#/cert">Retake</a>`;
+      bar.innerHTML = `<a class="primary" href="#/cert">Retake</a>`;
+      bar.prepend(tutorSay("oops", `<b>${score}%</b>: not quite (${PASS}% needed). Review the lessons behind the questions you missed and try again. You've got this.`));
     }
   };
 }
@@ -66,7 +68,7 @@ function certificate() {
   const el = h(`<div class="page cert-done">
     <div class="certificate" id="certificate">
       <div class="cert-border">
-        ${logo(84, "ct")}
+        <img class="cert-logo" src="${brand("logo.webp")}" alt="TulpaTutor">
         <span class="cert-kicker">TulpaTutor · HermiTech</span>
         <h1>Certificate of Mastery</h1>
         <p>This certifies that</p>
@@ -77,11 +79,15 @@ function certificate() {
     </div>
     <div class="btn-row center"><button class="primary save">${icon("download")} Save as image</button><a class="ghost" href="#/challenges">${icon("trophy")} Keep practising</a></div>
   </div>`);
+  el.querySelector(".certificate").after(mascot("celebrate", { size: 140, anim: "hop", cls: "cert-mascot" }));
   el.querySelector(".save").onclick = () => saveImage(c);
   return el;
 }
 
-function saveImage(c) {
+async function saveImage(c) {
+  const logoImg = new Image();
+  logoImg.src = brand("logo.webp");
+  await logoImg.decode().catch(() => {});
   const W = 1600, H = 1100, cv = document.createElement("canvas");
   cv.width = W; cv.height = H;
   const g = cv.getContext("2d");
@@ -91,10 +97,11 @@ function saveImage(c) {
   const br = g.createLinearGradient(0, 0, W, 0);
   br.addColorStop(0, "#22d3ee"); br.addColorStop(0.5, "#3b82f6"); br.addColorStop(1, "#a855f7");
   g.strokeStyle = br; g.lineWidth = 10; g.strokeRect(50, 50, W - 100, H - 100);
+  if (logoImg.naturalWidth) g.drawImage(logoImg, W / 2 - 170, 70, 340, 340 * logoImg.naturalHeight / logoImg.naturalWidth);
   g.textAlign = "center"; g.fillStyle = "#93c5fd"; g.font = "600 30px system-ui";
-  g.fillText("TULPATUTOR · HERMITECH", W / 2, 210);
-  g.fillStyle = "#fff"; g.font = "700 84px system-ui"; g.fillText("Certificate of Mastery", W / 2, 330);
-  g.fillStyle = "#cbd5e1"; g.font = "32px system-ui"; g.fillText("This certifies that", W / 2, 440);
+  g.fillText("TULPATUTOR · HERMITECH", W / 2, 290);
+  g.fillStyle = "#fff"; g.font = "700 84px system-ui"; g.fillText("Certificate of Mastery", W / 2, 380);
+  g.fillStyle = "#cbd5e1"; g.font = "32px system-ui"; g.fillText("This certifies that", W / 2, 460);
   g.fillStyle = br; g.font = "700 96px system-ui"; g.fillText(c.name, W / 2, 570);
   g.fillStyle = "#cbd5e1"; g.font = "32px system-ui";
   g.fillText("has completed the Tulpa curriculum and passed the", W / 2, 680);

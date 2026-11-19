@@ -3,7 +3,8 @@ import "./styles/app.css";
 import { Capacitor } from "@capacitor/core";
 import { icon, logo } from "./ui/icons.js";
 import { h, esc } from "./ui/components.js";
-import { installTapHaptics, haptic, stagger, motionReduced } from "./ui/fx.js";
+import { installTapHaptics, installRipples, haptic, stagger, motionReduced } from "./ui/fx.js";
+import { brand } from "./ui/tutor.js";
 import { state, subscribe, levelInfo, unread, hydrate, checkAchievements, save, addStudyTime, markAllRead } from "./state.js";
 import { runtime } from "./runtime/client.js";
 import { showOnboarding, showAchievementToasts } from "./views/modals.js";
@@ -37,14 +38,14 @@ const app = document.getElementById("app");
 app.innerHTML = `
   <div class="space-bg" aria-hidden="true"><div class="stars s1"></div><div class="stars s2"></div><div class="planet"></div><div class="grid-floor"></div></div>
   <aside class="sidebar">
-    <a class="brand tap" href="#/home">${logo(72, "sb")}<div><b>TULPA</b><span>Learn</span></div></a>
+    <a class="brand tap" href="#/home"><img class="brand-logo" src="${brand("logo.webp")}" alt="TulpaTutor"></a>
     <nav class="nav">${NAV.map(([r, label, ic]) => `<a class="nav-item" data-route="${r}" href="#/${r}">${icon(ic)}<span>${label}</span></a>`).join("")}</nav>
     <div class="level-card tap" data-go="progress"></div>
     <div class="motto">Build. Automate. Secure.<br>with <b>TULPA</b></div>
   </aside>
   <div class="main">
     <header class="topbar">
-      <div class="title-block"><h1 class="app-title">Learn <span class="grad">TULPA</span></h1><p class="tagline">Think. Code. Build.</p></div>
+      <a class="mini-brand tap" href="#/home"><img src="${brand("head.webp")}" alt="TulpaTutor"></a><div class="title-block"><h1 class="app-title">Learn <span class="grad">TULPA</span></h1><p class="tagline">Think. Code. Build.</p></div>
       <div class="top-actions">
         <button class="icon-btn bell" aria-label="Notifications">${icon("bell")}<span class="dot"></span></button>
         <span class="sep"></span>
@@ -101,7 +102,7 @@ function renderChrome() {
   dot.textContent = n > 9 ? "9+" : n || "";
   dot.hidden = !n;
   const av = app.querySelector(".avatar");
-  av.innerHTML = state.name ? `<span class="initials">${esc(state.name.trim()[0].toUpperCase())}</span>` : icon("user");
+  av.innerHTML = state.name ? `<span class="initials">${esc(state.name.trim()[0].toUpperCase())}</span>` : `<img class="av-head" src="${brand("head.webp")}" alt="">`;
   document.documentElement.style.setProperty("--code-size", state.settings.fontSize + "px");
   document.body.classList.toggle("no-motion", !state.settings.motion);
 }
@@ -129,6 +130,7 @@ document.addEventListener("click", (e) => {
 });
 
 installTapHaptics(document.body);
+installRipples(document.body);
 subscribe(renderChrome);
 window.addEventListener("hashchange", route);
 

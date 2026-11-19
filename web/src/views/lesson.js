@@ -5,14 +5,17 @@ import { haptic, xpFloat, pop } from "../ui/fx.js";
 import { lessonById, nextLesson, SKILLS } from "../course/index.js";
 import { state, update, save, isDone, lessonUnlocked, completeLesson, recordLessonPart, grantXP } from "../state.js";
 import { celebrate } from "./modals.js";
+import { tutorSay } from "../ui/tutor.js";
+import { revealOnScroll } from "../ui/fx.js";
 
 export function render([moduleId, file]) {
   const id = `${moduleId}/${file}`;
   const lesson = lessonById[id];
   if (!lesson) return h(`<div class="page"><p>Lesson not found.</p><a href="#/map">Back to the map</a></div>`);
   if (!lessonUnlocked(lesson)) {
-    return h(`<div class="page locked-page card">${icon("lock")}<h2>This lesson is locked</h2>
-      <p>Finish the previous lessons first, or unlock everything in Settings.</p><a class="primary" href="#/module/${moduleId}">Back to the module</a></div>`);
+    const lp = h(`<div class="page locked-page card"><h2>${icon("lock")} This lesson is locked</h2><a class="primary" href="#/module/${moduleId}">Back to the module</a></div>`);
+    lp.insertBefore(tutorSay("think", "Finish the previous lessons first, then I'll unlock this one. (Experienced? <b>Settings → Unlock all modules</b>.)", { size: 88 }), lp.lastElementChild);
+    return lp;
   }
   update((s) => { if (!isDone(id)) s.lastLesson = id; });
   const m = lesson.module;
@@ -116,5 +119,6 @@ export function render([moduleId, file]) {
   addEventListener("scroll", onScroll, { passive: true });
   document.getElementById("view").addEventListener("scroll", onScroll, { passive: true });
   void haptic;
-  return { node: el, cleanup: () => removeEventListener("scroll", onScroll) };
+  const stopReveal = revealOnScroll(body.children);
+  return { node: el, cleanup: () => { removeEventListener("scroll", onScroll); stopReveal(); } };
 }

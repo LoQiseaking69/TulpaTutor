@@ -4,7 +4,8 @@ import { marked } from "marked";
 import { createEditor, highlightStatic } from "./editor.js";
 import { runtime, splitTelemetry } from "../runtime/client.js";
 import { icon } from "./icons.js";
-import { haptic, shake, pop, xpFloat } from "./fx.js";
+import { haptic, shake, pop, xpFloat, sparkle } from "./fx.js";
+import { tutorSay, react, line } from "./tutor.js";
 import { normalizeOutput } from "../course/parse.js";
 import { state, save, unlock } from "../state.js";
 
@@ -198,7 +199,7 @@ export function quiz(questions, { onAnswer, title = "Check your understanding" }
         if (right) correct++;
         b.classList.add(right ? "right" : "wrong");
         opts.children[q.answer].classList.add("right");
-        if (right) { pop(b); haptic("success"); } else { shake(b); haptic("error"); }
+        if (right) { pop(b); sparkle(b.querySelector(".opt-key")); haptic("success"); } else { shake(b); haptic("error"); }
         const ex = qEl.querySelector(".explain");
         ex.innerHTML = `<strong>${right ? "Correct!" : "Not quite."}</strong> ${mdInline(q.explain || "")}`;
         ex.hidden = false;
@@ -269,7 +270,7 @@ export function exercise(ex, { key, onPass, done = false, label = "Exercise" } =
     let ok = res.ok, why = res.ok ? "" : "Your program stopped with an error. Read the message above.";
     if (ok && ex.expect != null && normalizeOutput(out.text) !== normalizeOutput(ex.expect)) {
       ok = false;
-      why = `Output doesn't match yet.<div class="diff"><div><b>Expected</b><pre>${esc(normalizeOutput(ex.expect))}</pre></div><div><b>Yours</b><pre>${esc(normalizeOutput(out.text)) || "(nothing)"}</pre></div></div>`;
+      why = `Output doesn't match yet.<div class="out-diff"><div><b>Expected</b><pre>${esc(normalizeOutput(ex.expect))}</pre></div><div><b>Yours</b><pre>${esc(normalizeOutput(out.text)) || "(nothing)"}</pre></div></div>`;
     }
     if (ok && ex.check) {
       const r2 = await runtime.run(code + "\n" + ex.check, { onOutput: () => {} });
@@ -279,9 +280,11 @@ export function exercise(ex, { key, onPass, done = false, label = "Exercise" } =
     fb.hidden = false;
     if (ok) {
       fb.className = "ex-feedback good";
-      fb.innerHTML = `${icon("check")} <div><strong>${pickPraise()}</strong> ${attempts === 1 ? "First try!" : `Solved in ${attempts} attempts.`}</div>`;
+      fb.innerHTML = "";
+      fb.append(tutorSay("celebrate", `<strong>${pickPraise()}</strong> ${attempts === 1 ? "First try!" : `Solved in ${attempts} attempts.`}`));
       el.classList.add("passed");
       pop(fb);
+      sparkle(btn, { count: 26 });
       haptic("success");
       if (!passed) {
         passed = true;
@@ -290,9 +293,11 @@ export function exercise(ex, { key, onPass, done = false, label = "Exercise" } =
       }
     } else {
       fb.className = "ex-feedback bad";
-      fb.innerHTML = `${icon("x")} <div>${why}</div>`;
+      fb.innerHTML = "";
+      fb.append(tutorSay("oops", `<strong>${esc(line("oops"))}</strong><div>${why}</div>`));
       shake(fb);
       haptic("error");
+      if (attempts === 3 && ex.hints?.length && hintsUsed === 0) react("think", "Stuck? Tap Hint for a nudge.");
       if (attempts >= 2) el.querySelector(".solution-btn").hidden = false;
     }
   }
@@ -306,9 +311,11 @@ export function exercise(ex, { key, onPass, done = false, label = "Exercise" } =
     upd();
     hb.onclick = () => {
       if (hintsUsed >= ex.hints.length) return;
-      const hint = h(`<div class="hint">${icon("bulb")}<div>${md(ex.hints[hintsUsed])}</div></div>`);
+      const hint = tutorSay("think", md(ex.hints[hintsUsed]), { size: 56 });
+      hint.classList.add("hint");
       el.querySelector(".hints").appendChild(hint);
       pop(hint);
+      haptic("select");
       hintsUsed++;
       upd();
       if (hintsUsed >= ex.hints.length) el.querySelector(".solution-btn").hidden = false;

@@ -62,15 +62,17 @@ export function xpFloat(anchor, amount, label = "XP") {
   ).onfinish = () => el.remove();
 }
 
-/** Counts a number up inside an element. */
-export function countUp(el, to, { from = 0, ms = 900, format = (v) => Math.round(v).toLocaleString() } = {}) {
+/** Counts a number up inside an element; `ticks` adds light haptic ticks as it climbs. */
+export function countUp(el, to, { from = 0, ms = 900, ticks = false, format = (v) => Math.round(v).toLocaleString() } = {}) {
   if (!el) return;
   if (reduced()) { el.textContent = format(to); return; }
   const t0 = performance.now();
+  let lastTick = 0;
   const step = (t) => {
     const k = Math.min(1, (t - t0) / ms);
     const e = 1 - Math.pow(1 - k, 3);
     el.textContent = format(from + (to - from) * e);
+    if (ticks && k < 1 && t - lastTick > 70) { lastTick = t; haptic("select"); }
     if (k < 1) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
@@ -122,6 +124,58 @@ export function confetti({ count = 140, spread = 1, colors = ["#22d3ee", "#3b82f
     else c.remove();
   };
   requestAnimationFrame(frame);
+}
+
+/** Small burst of sparks from an element (correct answers, passed checks). */
+export function sparkle(anchor, { count = 18, colors = ["#22d3ee", "#a855f7", "#facc15", "#22c55e", "#f472b6"] } = {}) {
+  if (!anchor || reduced()) return;
+  const r = anchor.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement("i");
+    s.className = "spark";
+    s.style.left = `${cx}px`;
+    s.style.top = `${cy}px`;
+    s.style.background = colors[i % colors.length];
+    document.body.appendChild(s);
+    const a = (i / count) * Math.PI * 2 + Math.random() * 0.4;
+    const d = 40 + Math.random() * 60;
+    s.animate(
+      [{ transform: "translate(-50%,-50%) scale(1)", opacity: 1 },
+       { transform: `translate(calc(-50% + ${Math.cos(a) * d}px), calc(-50% + ${Math.sin(a) * d}px)) scale(.2)`, opacity: 0 }],
+      { duration: 600 + Math.random() * 300, easing: "cubic-bezier(.2,.7,.3,1)" }
+    ).onfinish = () => s.remove();
+  }
+}
+
+/** Material-style ripple from the press point on buttons and tappable cards. */
+export function installRipples(root) {
+  root.addEventListener("pointerdown", (e) => {
+    if (reduced()) return;
+    const t = e.target.closest(".primary, .run, .ghost, .danger, .option, .qa, .seg-btn, .nav-item, .mode, .tab");
+    if (!t || t.disabled) return;
+    const r = t.getBoundingClientRect();
+    const size = Math.max(r.width, r.height) * 2.2;
+    const w = document.createElement("span");
+    w.className = "ripple";
+    w.style.width = w.style.height = `${size}px`;
+    w.style.left = `${e.clientX - r.left - size / 2}px`;
+    w.style.top = `${e.clientY - r.top - size / 2}px`;
+    if (getComputedStyle(t).position === "static") t.style.position = "relative";
+    t.style.overflow = "hidden";
+    t.appendChild(w);
+    w.animate([{ transform: "scale(0)", opacity: 0.35 }, { transform: "scale(1)", opacity: 0 }], { duration: 650, easing: "cubic-bezier(.2,.7,.3,1)" }).onfinish = () => w.remove();
+  }, { passive: true });
+}
+
+/** Fades blocks up as they scroll into view. */
+export function revealOnScroll(els) {
+  if (reduced() || !("IntersectionObserver" in window)) return () => {};
+  const io = new IntersectionObserver((entries) => {
+    for (const en of entries) if (en.isIntersecting) { en.target.classList.add("revealed"); io.unobserve(en.target); }
+  }, { rootMargin: "0px 0px -8% 0px" });
+  [...els].forEach((el) => { el.classList.add("reveal"); io.observe(el); });
+  return () => io.disconnect();
 }
 
 /** Staggered entrance for a list of elements. */

@@ -5,6 +5,7 @@ import { countUp } from "../ui/fx.js";
 import { lessons } from "../course/index.js";
 import { state, courseProgress, currentLesson, goalProgress, lessonsDone, streak, studyHours, skillBreakdown, dueReviews, certUnlocked } from "../state.js";
 import { TIPS } from "./tips.js";
+import { mascot } from "../ui/tutor.js";
 
 export function render() {
   const cur = currentLesson();
@@ -39,7 +40,7 @@ export function render() {
       </section>
 
       <section class="card tip-card">
-        <div class="tip-icon">${icon("bulb")}</div>
+        <div class="tip-icon"><span class="tip-mascot"></span></div>
         <div class="tip-body"><h4>Learning Tip</h4><p>${esc(tip.text)}</p></div>
         <a class="pill" href="${tip.href}">View tip ${icon("arrow")}</a>
       </section>
@@ -50,7 +51,7 @@ export function render() {
         <div class="card-head">${icon("chart")}<h3>Your Stats</h3></div>
         <ul class="stat-list">
           <li>${icon("star", "c-yellow")}<span>XP</span><b data-count="${state.xp}">0</b></li>
-          <li>${icon("flame", "c-orange")}<span>Streak</span><b>${streak()} Day${streak() === 1 ? "" : "s"}</b></li>
+          <li>${icon("flame", "c-orange flame")}<span>Streak</span><b>${streak()} Day${streak() === 1 ? "" : "s"}</b></li>
           <li>${icon("check", "c-green")}<span>Lessons</span><b>${lessonsDone()} / ${lessons.length}</b></li>
           <li>${icon("clock", "c-blue")}<span>Study Time</span><b>${studyHours().toFixed(1)} hrs</b></li>
         </ul>
@@ -69,6 +70,7 @@ export function render() {
     </aside>
   </div>`);
 
+  el.querySelector(".tip-mascot").replaceWith(mascot("think", { size: 64, anim: "idle" }));
   el.querySelector(".hero-ring").append(ring(courseProgress(), { size: 150, label: "Course Progress" }));
   el.querySelector(".map-slot").append(courseMap({ compact: true, onOpen: openNode }));
   el.querySelector(".donut-slot").append(donut(skills), skillLegend(skills));
