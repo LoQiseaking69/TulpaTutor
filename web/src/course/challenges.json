@@ -1,1 +1,242 @@
-{"challenges": []}
+{
+ "challenges": [
+  {
+   "id": "fizzbuzz-units",
+   "title": "FizzBuzz, Robot Edition",
+   "difficulty": 1,
+   "skill": "syntax",
+   "xp": 40,
+   "summary": "Classic FizzBuzz, but with sensor names.",
+   "prompt": "For `i` in `1..=15`, print `imu` if divisible by 3, `gps` if by 5, `imu+gps` if by both, otherwise the number. Print everything on **one line** separated by spaces.",
+   "starter": "let out = []\n# fill out, then print it joined with spaces",
+   "solution": "let out = []\nfor i in 1..=15 {\n    out.push(if i % 15 == 0 { \"imu+gps\" } else if i % 3 == 0 { \"imu\" } else if i % 5 == 0 { \"gps\" } else { str(i) })\n}\nprint(out.join(\" \"))",
+   "expect": "1 2 imu 4 gps imu 7 8 imu gps 11 imu 13 14 imu+gps",
+   "check": "",
+   "hints": [
+    "Test divisibility by 15 first.",
+    "`if ... { } else if ... { }` works inside `push(...)`."
+   ]
+  },
+  {
+   "id": "unit-converter",
+   "title": "Unit Converter",
+   "difficulty": 1,
+   "skill": "syntax",
+   "xp": 40,
+   "summary": "Parse '12 km/h' style strings into quantities.",
+   "prompt": "Write `fn parse_q(text)` that splits `\"<number> <unit>\"` and returns `quantity(number, unit)`. Print `parse_q(\"36 km/h\").to(\"m/s\")` and `parse_q(\"2.5 ft\").to(\"cm\")`.",
+   "starter": "fn parse_q(text) {\n    nil\n}",
+   "solution": "fn parse_q(text) {\n    let parts = text.strip().split(\" \")\n    quantity(parts[0].to_float(), parts[1])\n}\nprint(parse_q(\"36 km/h\").to(\"m/s\"))\nprint(parse_q(\"2.5 ft\").to(\"cm\"))",
+   "expect": "10 m/s\n76.2 cm",
+   "check": "assert_eq!(parse_q(\" 1 km \").to(\"m\").value, 1000)",
+   "hints": [
+    "`split(\" \")` then `quantity(parts[0].to_float(), parts[1])`.",
+    "Strip whitespace first so `\" 1 km \"` works."
+   ]
+  },
+  {
+   "id": "ring-buffer",
+   "title": "Ring Buffer",
+   "difficulty": 2,
+   "skill": "programming",
+   "xp": 60,
+   "summary": "A fixed-size buffer with an invariant.",
+   "prompt": "Write `struct Ring` with `cap = 4`, `items = []`, an invariant `len(self.items) <= self.cap`, and `push(self, x)` that drops the **oldest** item when full. Also `mean(self)`. Push `1..=6` and print `items` and `mean()`.",
+   "starter": "struct Ring {\n    cap = 4\n    items = []\n}",
+   "solution": "struct Ring {\n    cap = 4\n    items = []\n    invariant len(self.items) <= self.cap\n    fn push(self, x) {\n        let next = self.items + [x]\n        if len(next) > self.cap { next = next[1..len(next)] }\n        self.items = next\n    }\n    fn mean(self) { self.items.sum() / float(len(self.items)) }\n}\nlet r = Ring()\nfor i in 1..=6 { r.push(i) }\nprint(r.items, r.mean())",
+   "expect": "[3, 4, 5, 6] 4.5",
+   "check": "let q = Ring(cap: 2)\nq.push(9); q.push(8); q.push(7)\nassert_eq!(q.items, [8, 7])",
+   "hints": [
+    "Build the new list first, trim it, then assign: assigning keeps the invariant true at every write.",
+    "Slices need both ends: `next[1..len(next)]`."
+   ]
+  },
+  {
+   "id": "parse-telemetry",
+   "title": "Telemetry Parser",
+   "difficulty": 2,
+   "skill": "programming",
+   "xp": 60,
+   "summary": "Turn a key=value frame into typed values.",
+   "prompt": "Write `fn parse(frame)` for frames like `\"v=12.4;i=1.25;mode=AUTO\"` returning a dict where numbers become floats and other values stay strings. Print `parse(...)` for that frame and the power `v * i` rounded to 2 decimals.",
+   "starter": "fn parse(frame) {\n    {}\n}",
+   "solution": "fn parse(frame) {\n    let d = {}\n    for kv in frame.split(\";\") {\n        let p = kv.split(\"=\")\n        let v = p[1]\n        try { v = p[1].to_float() } catch e { }\n        d[p[0]] = v\n    }\n    d\n}\nlet t = parse(\"v=12.4;i=1.25;mode=AUTO\")\nprint(t)\nprint(round(t.v * t.i, 2))",
+   "expect": "{\"v\": 12.4, \"i\": 1.25, \"mode\": \"AUTO\"}\n15.5",
+   "check": "assert_eq!(parse(\"a=1;b=x\").b, \"x\")",
+   "hints": [
+    "Split on `;`, then each pair on `=`.",
+    "Try `to_float()` inside `try`, keep the string on failure."
+   ]
+  },
+  {
+   "id": "debounced-counter",
+   "title": "Debounced Counter",
+   "difficulty": 2,
+   "skill": "systems",
+   "xp": 70,
+   "summary": "Count real presses, ignore bounces.",
+   "prompt": "A button on pin 6. Count presses that hold for at least **20 ms** using a `when ... for` rule. Simulate: press 5 ms, release 30 ms, press 40 ms, release 30 ms, press 25 ms, release. Print the count.",
+   "starter": "let btn = GPIO::new(6, \"in\")\nlet presses = 0",
+   "solution": "let btn = GPIO::new(6, \"in\")\nlet presses = 0\nwhen btn.read() == 1 for 20[ms] { presses += 1 }\nfor step in [[1, 0.005], [0, 0.03], [1, 0.04], [0, 0.03], [1, 0.025], [0, 0.03]] {\n    sim::gpio_input(6, step[0])\n    sleep(step[1])\n}\nprint(presses)",
+   "expect": "2",
+   "check": "",
+   "hints": [
+    "`when btn.read() == 1 for 20[ms] { presses += 1 }`.",
+    "Drive the input with `sim::gpio_input(6, level)` and `sleep(seconds)`."
+   ]
+  },
+  {
+   "id": "vending-machine",
+   "title": "Vending Machine",
+   "difficulty": 2,
+   "skill": "programming",
+   "xp": 70,
+   "summary": "A state machine with credit and guarded vending.",
+   "prompt": "Write `machine Vend(credit = 0)` with states `Idle` and `Ready`. `coin(c)` adds credit in both states and moves Idle\u2192Ready once credit \u2265 100; `vend()` in Ready subtracts 100 and returns to Idle. Run: coin(50), vend(), coin(25), coin(25), vend(), and print the state and credit.",
+   "starter": "machine Vend(credit = 0) {\n    state Idle { }\n    state Ready { }\n}",
+   "solution": "machine Vend(credit = 0) {\n    state Idle {\n        on coin(c) if credit + c >= 100 => Ready { credit += c }\n        on coin(c) { credit += c }\n    }\n    state Ready {\n        on coin(c) { credit += c }\n        on vend => Idle { credit -= 100 }\n    }\n}\nlet v = Vend()\nv.coin(50); v.vend(); v.coin(25); v.coin(25); v.vend()\nprint(v.state, v.credit)",
+   "expect": "Idle 0",
+   "check": "let w = Vend()\nw.coin(150)\nassert_eq!(w.state, \"Ready\")\nw.vend()\nassert_eq!(w.credit, 50)",
+   "hints": [
+    "Two `on coin(c)` transitions in Idle: a guarded one that goes to Ready, then an internal fallback.",
+    "Guards see the parameter: `if credit + c >= 100`."
+   ]
+  },
+  {
+   "id": "pid-hold",
+   "title": "Hold the Line",
+   "difficulty": 2,
+   "skill": "systems",
+   "xp": 70,
+   "summary": "Tune a PID to hold position against a disturbance.",
+   "prompt": "A cart's position follows `vel += (u - 0.5 * vel) * dt; pos += vel * dt` with `dt = 0.01`, and a constant push of `-0.3` is added to `u` (wind). Choose PID gains (limits \u00b15) so that after 1000 steps `pos` is within 0.02 of the setpoint `1.0`. Print `held`.",
+   "starter": "let pid = PID::new(1.0, 0.0, 0.0)\npid.set_limits(-5, 5)\nlet pos = 0.0\nlet vel = 0.0\nlet dt = 0.01\nfor i in 0..1000 {\n    let u = pid.update(1.0, pos, dt) - 0.3\n    vel += (u - 0.5 * vel) * dt\n    pos += vel * dt\n}\nprint(if abs(pos - 1.0) < 0.02 { \"held\" } else { f\"off by {pos - 1.0:.3f}\" })",
+   "solution": "let pid = PID::new(4.0, 1.5, 3.0)\npid.set_limits(-5, 5)\nlet pos = 0.0\nlet vel = 0.0\nlet dt = 0.01\nfor i in 0..1000 {\n    let u = pid.update(1.0, pos, dt) - 0.3\n    vel += (u - 0.5 * vel) * dt\n    pos += vel * dt\n}\nprint(if abs(pos - 1.0) < 0.02 { \"held\" } else { f\"off by {pos - 1.0:.3f}\" })",
+   "expect": "held",
+   "check": "",
+   "hints": [
+    "A constant disturbance needs an integral term to cancel it.",
+    "The cart has little damping: add derivative gain to stop it oscillating."
+   ]
+  },
+  {
+   "id": "checksum",
+   "title": "Packet Framer",
+   "difficulty": 2,
+   "skill": "systems",
+   "xp": 60,
+   "summary": "Frame and verify serial packets.",
+   "prompt": "Write `fn frame(payload)` returning `[0xAA, len(payload)] + payload + [crc]` where `crc` is the XOR of the length and every payload byte, and `fn valid(pkt)`. Print `frame([0x10, 0x20]).hex()`, then `valid` of that frame and of a corrupted copy (last payload byte changed to 0x21).",
+   "starter": "fn frame(payload) {\n    []\n}\nfn valid(pkt) {\n    false\n}",
+   "solution": "fn crc(bytes) { bytes.reduce(|a, b| a ^ b) }\nfn frame(payload) {\n    let body = [len(payload)] + payload\n    [0xAA] + body + [crc(body)]\n}\nfn valid(pkt) {\n    pkt[0] == 0xAA and crc(pkt[1..len(pkt) - 1]) == pkt[len(pkt) - 1]\n}\nlet f = frame([0x10, 0x20])\nprint(f.hex())\nlet bad = f.copy()\nbad[3] = 0x21\nprint(valid(f), valid(bad))",
+   "expect": "aa 02 10 20 32\ntrue false",
+   "check": "assert valid(frame([1, 2, 3]))",
+   "hints": [
+    "The CRC covers the length byte too: XOR of `[len] + payload`.",
+    "In `valid`, the body is `pkt[1..len(pkt) - 1]`."
+   ]
+  },
+  {
+   "id": "odometry",
+   "title": "Dead Reckoning",
+   "difficulty": 3,
+   "skill": "robotics",
+   "xp": 90,
+   "summary": "Integrate wheel encoders into a pose.",
+   "prompt": "A differential robot with wheel base `0.2` m. Given a list of `[dl, dr]` wheel travel increments (metres), integrate the pose with `ds = (dl + dr) / 2`, `d\u03b8 = (dr - dl) / 0.2`, `x += ds\u00b7cos(\u03b8 + d\u03b8/2)`, `y += ds\u00b7sin(\u03b8 + d\u03b8/2)`, `\u03b8 += d\u03b8`. For 10 steps of `[0.1, 0.1]` followed by 10 steps of `[0.0, 0.0314159]`, print x, y (2 decimals) and \u03b8 in degrees (rounded to whole).",
+   "starter": "let x = 0.0\nlet y = 0.0\nlet th = 0.0",
+   "solution": "let x = 0.0\nlet y = 0.0\nlet th = 0.0\nlet steps = [[0.1, 0.1]; 10] + [[0.0, 0.0314159]; 10]\nfor s in steps {\n    let ds = (s[0] + s[1]) / 2\n    let dth = (s[1] - s[0]) / 0.2\n    x += ds * cos(th + dth / 2)\n    y += ds * sin(th + dth / 2)\n    th += dth\n}\nprintln!(\"{:.2} {:.2} {}\", x, y, round(degrees(th)))",
+   "expect": "1.10 0.10 90",
+   "check": "",
+   "hints": [
+    "`[[0.1, 0.1]; 10]` repeats a step ten times; `+` joins lists.",
+    "`degrees(th)` converts radians."
+   ]
+  },
+  {
+   "id": "bt-patrol",
+   "title": "Patrol Tree",
+   "difficulty": 3,
+   "skill": "robotics",
+   "xp": 90,
+   "summary": "A behavior tree that patrols waypoints and docks on low battery.",
+   "prompt": "Blackboard: `{battery: 30, wp: 0, visits: []}`. Build a `ReactiveSelector` with (1) a Sequence: Condition `low` (`battery < 20`) then Action `dock` (sets battery 100, pushes \"dock\" to visits); (2) Action `patrol` that pushes `\"wp\" + str(wp)`, advances `wp` modulo 3, drains battery by 6 and returns true. Tick it 8 times and print `visits`.",
+   "starter": "import \"std/plan\"\nlet bb = {battery: 30, wp: 0, visits: []}",
+   "solution": "import \"std/plan\"\nlet bb = {battery: 30, wp: 0, visits: []}\nlet tree = plan.ReactiveSelector([\n    plan.Sequence([\n        plan.Condition(\"low\", |bb| bb.battery < 20),\n        plan.Action(\"dock\", |bb| { bb.battery = 100; bb.visits.push(\"dock\"); true }),\n    ]),\n    plan.Action(\"patrol\", |bb| { bb.visits.push(\"wp\" + str(bb.wp)); bb.wp = (bb.wp + 1) % 3; bb.battery -= 6; true }),\n])\nfor i in 0..8 { tree.tick(bb) }\nprint(bb.visits)",
+   "expect": "[\"wp0\", \"wp1\", \"dock\", \"wp2\", \"wp0\", \"wp1\", \"wp2\", \"wp0\"]",
+   "check": "",
+   "hints": [
+    "30 \u2192 24 \u2192 18: on the third tick the battery is low, so the tree docks.",
+    "A Selector tries its first child (the dock sequence) and falls back to patrol when the condition fails."
+   ]
+  },
+  {
+   "id": "grid-planner",
+   "title": "Grid Path Planner",
+   "difficulty": 3,
+   "skill": "robotics",
+   "xp": 100,
+   "summary": "Breadth-first search on an occupancy grid.",
+   "prompt": "Write `fn shortest(grid, start, goal)` returning the number of moves (4-connected) from start to goal avoiding `#`, or `-1`. Use BFS with a queue list. Print the result for the given grid from `[0, 0]` to `[0, 4]`, and to the walled-off cell `[3, 4]`.",
+   "starter": "let grid = [\"..#..\", \".##.#\", \"....#\", \"#.##.\"]\nfn shortest(grid, start, goal) {\n    -1\n}",
+   "solution": "let grid = [\"..#..\", \".##.#\", \"....#\", \"#.##.\"]\nfn shortest(grid, start, goal) {\n    let rows = len(grid)\n    let cols = len(grid[0])\n    let dist = {f\"{start[0]},{start[1]}\": 0}\n    let queue = [start]\n    let head = 0\n    while head < len(queue) {\n        let cur = queue[head]\n        head += 1\n        let d = dist[f\"{cur[0]},{cur[1]}\"]\n        if cur[0] == goal[0] and cur[1] == goal[1] { return d }\n        for mv in [[1, 0], [-1, 0], [0, 1], [0, -1]] {\n            let r = cur[0] + mv[0]\n            let c = cur[1] + mv[1]\n            if r < 0 or r >= rows or c < 0 or c >= cols { continue }\n            if grid[r][c] == \"#\" or f\"{r},{c}\" in dist { continue }\n            dist[f\"{r},{c}\"] = d + 1\n            queue.push([r, c])\n        }\n    }\n    -1\n}\nprint(shortest(grid, [0, 0], [0, 4]), shortest(grid, [0, 0], [3, 4]))",
+   "expect": "8 -1",
+   "check": "",
+   "hints": [
+    "Keep a `head` index into the queue instead of removing from the front.",
+    "Store distances in a dict keyed by `\"r,c\"`."
+   ]
+  },
+  {
+   "id": "safe-arm",
+   "title": "Safe Arm Controller",
+   "difficulty": 3,
+   "skill": "programming",
+   "xp": 100,
+   "summary": "Contracts, invariants and an envelope working together.",
+   "prompt": "Write `struct Arm` with `angle = 0` and invariant `-90 <= angle <= 90`, and `fn step_toward(arm, target)` that requires the target within \u00b190 and moves at most 15 degrees per call. Add `always arm.angle != 77` as a fail-safe (it should never trigger). Starting at 0, call `step_toward(arm, 60)` until it arrives and print the visited angles.",
+   "starter": "struct Arm {\n    angle = 0\n}\nlet arm = Arm()",
+   "solution": "struct Arm {\n    angle = 0\n    invariant -90 <= self.angle and self.angle <= 90\n}\nlet arm = Arm()\nfn step_toward(arm, target)\n    require -90 <= target and target <= 90\n{\n    let delta = clamp(target - arm.angle, -15, 15)\n    arm.angle = arm.angle + delta\n}\nalways arm.angle != 77\nlet seen = []\nwhile arm.angle != 60 {\n    step_toward(arm, 60)\n    seen.push(arm.angle)\n}\nprint(seen)",
+   "expect": "[15, 30, 45, 60]",
+   "check": "let bad = false\ntry { step_toward(arm, 120) } catch e { bad = true }\nassert bad, \"targets beyond 90 must violate the precondition\"",
+   "hints": [
+    "`clamp(target - arm.angle, -15, 15)` limits each step.",
+    "Put `require -90 <= target and target <= 90` between the parameters and the body."
+   ]
+  },
+  {
+   "id": "link-relay",
+   "title": "Link Relay",
+   "difficulty": 3,
+   "skill": "systems",
+   "xp": 90,
+   "summary": "A node that converts and republishes data.",
+   "prompt": "Create nodes `sensor`, `relay` and `ui`. The sensor publishes `/raw` as `\"[mm]\"`; the relay subscribes to `/raw` with a handler that republishes on `/filtered` (`\"[m]\"`) the **average of the last 3 values**; the ui subscribes to `/filtered` in `\"[cm]\"`. Publish 100, 200, 600 mm (spinning 10 ms after each) and print what the ui sees last.",
+   "starter": "import \"std/link\"",
+   "solution": "import \"std/link\"\nlet sensor = link.node(\"sensor\")\nlet relay = link.node(\"relay\")\nlet ui = link.node(\"ui\")\nlet raw = sensor.advertise(\"/raw\", \"[mm]\")\nlet out = relay.advertise(\"/filtered\", \"[m]\")\nlet recent = []\nrelay.subscribe(\"/raw\", \"[mm]\", |v, meta| {\n    recent.push(v)\n    if len(recent) > 3 { recent = recent[1..len(recent)] }\n    out.publish(recent.reduce(|a, b| a + b) / len(recent))\n})\nlet seen = ui.subscribe(\"/filtered\", \"[cm]\")\nlink.spin_for(300[ms])\nfor v in [100, 200, 600] { raw.publish(v * 1[mm]); link.spin_for(10[ms]) }\nprint(seen.latest)",
+   "expect": "30 cm",
+   "check": "",
+   "hints": [
+    "The relay's subscribe handler `|v, meta| { ... }` can call `out.publish(...)`.",
+    "Quantities add with units: the average of 100, 200, 600 mm is 300 mm = 30 cm."
+   ]
+  },
+  {
+   "id": "rover-explore",
+   "title": "Corridor Run",
+   "difficulty": 3,
+   "skill": "robotics",
+   "xp": 120,
+   "summary": "Drive the length of a corridor without touching the walls.",
+   "prompt": "In `w.arena(5, 1)` with the rover at `x: 0.3, y: 0.5`, drive to `x \u2265 4.3` m. Keep centred by steering on the difference of the side ranges at \u00b160\u00b0. Print `made it` and the bump count.",
+   "starter": "import \"std/world\"\nsim::virtual_time(true)\nlet w = world.World(dt: 20[ms], seed: 2)\nw.arena(5, 1)\nlet r = w.rover(x: 0.3, y: 0.5, heading: 0.1[rad], max_speed: 0.6[m/s])",
+   "solution": "import \"std/world\"\nsim::virtual_time(true)\nlet w = world.World(dt: 20[ms], seed: 2)\nw.arena(5, 1)\nlet r = w.rover(x: 0.3, y: 0.5, heading: 0.1[rad], max_speed: 0.6[m/s])\nlet n = 0\nwhile r.position()[0] < 4.3[m] and n < 3000 {\n    let l = r.range(60[deg], 2[m]).in(\"m\")\n    let rt = r.range(-60[deg], 2[m]).in(\"m\")\n    let turn = clamp((l - rt) * 1.5, -0.5, 0.5)\n    r.drive(0.7 - turn, 0.7 + turn)\n    w.step()\n    n += 1\n}\nprint(if r.position()[0] >= 4.3[m] { \"made it\" } else { \"stuck\" }, r.bumps)",
+   "expect": "made it 0",
+   "check": "",
+   "hints": [
+    "If the left wall is farther than the right, steer left: `turn = (left - right) * k`.",
+    "Keep the gain modest and clamp the turn so it doesn't oscillate."
+   ]
+  }
+ ]
+}

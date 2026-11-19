@@ -125,25 +125,57 @@ print(p.plan({docked: true, at: "dock", holding: false, battery: 10}, {holding: 
 `,
   },
   {
-    id: "rover-world", title: "Rover in a physics world", icon: "robot", tags: ["std/world", "simulation"],
-    desc: "A differential-drive rover avoids a pillar using its range sensor.",
+    id: "rover-world", title: "Autonomous rover", icon: "robot", tags: ["std/world", "machines", "always"],
+    desc: "A navigator state machine drives a rover around a pillar to its goal, with a safety envelope.",
     code: `import "std/world"
 sim::virtual_time(true)
 
-let w = world.World(dt: 20[ms], seed: 3)
+let w = world.World(dt: 20[ms], seed: 1)
 w.arena(4, 2)
-w.disc(2.0, 1.0, 0.25)
+w.disc(2.0, 1.0, 0.3)
 let r = w.rover(x: 0.3, y: 1.0, max_speed: 0.6[m/s])
+let goal = [3.6, 1.0]
 
-for i in 0..400 {
-    let ahead = r.range(0[rad], 2[m])
-    if ahead < 0.45[m] { r.drive(0.6, -0.6) } else { r.drive(1.0, 1.0) }
-    w.step()
+fn wrap(a) { atan2(sin(a), cos(a)) }
+fn bearing_to(gx, gy) {
     let p = r.position()
-    if i % 10 == 0 { tlm::plot("x", p[0].in("m"), millis() / 1000.0); tlm::plot("y", p[1].in("m"), millis() / 1000.0) }
+    wrap(atan2(gy - p[1].in("m"), gx - p[0].in("m")) - r.yaw().in("rad"))
 }
-let p = r.position()
-print(f"final position: ({p[0].in("m"):.2f}, {p[1].in("m"):.2f}) m after {millis() / 1000.0} s")
+
+machine Nav {
+    state Seek { on blocked => Avoid }
+    state Avoid { on done => Bypass }
+    state Bypass { on done => Seek; on blocked => Avoid }
+}
+let nav = Nav()
+let hold = 0
+let side = 1.0
+
+let forward = 0.0
+let saves = 0
+always not (forward > 0 and r.range(0[rad], 2[m]) < 0.2[m]) else { forward = 0.0; saves += 1 }
+
+let reached = false
+every!(20[ms], 1500, {
+    if r.distance_to(goal[0], goal[1]) < 0.15[m] { reached = true; r.stop(); break }
+    let front = r.range(0[rad], 2[m])
+    let left = r.range(0.7[rad], 2[m])
+    let right = r.range(-0.7[rad], 2[m])
+    if (nav.is("Seek") or nav.is("Bypass")) and front < 0.45[m] {
+        side = if left > right { 1.0 } else { -1.0 }
+        hold = 20
+        nav.blocked()
+    }
+    let turn = 0.0
+    if nav.is("Seek") { forward = 0.8; turn = clamp(bearing_to(goal[0], goal[1]) * 1.5, -0.8, 0.8) }
+    elif nav.is("Avoid") { forward = 0.0; turn = 0.6 * side; hold -= 1; if hold <= 0 { hold = 40; nav.done() } }
+    else { forward = 0.7; hold -= 1; if hold <= 0 { nav.done() } }
+    r.drive(forward - turn, forward + turn)
+    w.step()
+    tlm::plot("x [m]", r.position()[0].in("m"), millis() / 1000.0)
+    tlm::plot("y [m]", r.position()[1].in("m"), millis() / 1000.0)
+})
+println!("reached: {} in {:.1} s, bumps {}, safety saves {}", reached, millis() / 1000.0, r.bumps, saves)
 `,
   },
   {

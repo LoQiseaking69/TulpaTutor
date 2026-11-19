@@ -1,1 +1,366 @@
-{"questions": [], "capstones": []}
+{
+ "questions": [
+  {
+   "q": "What does `print(7 / 2, -7 % 3)` print?",
+   "options": [
+    "`3.5 -1`",
+    "`3 2`",
+    "`3 -1`",
+    "`4 2`"
+   ],
+   "answer": 1,
+   "explain": "Int division is Euclidean and % is never negative."
+  },
+  {
+   "q": "Which line is a runtime error?",
+   "options": [
+    "`let d = 2[m] + 30[cm]`",
+    "`let v = 3[m] / 2[s]`",
+    "`let x = 2[m] + 1[s]`",
+    "`let r = 5[m] / 2[m]`"
+   ],
+   "answer": 2,
+   "explain": "Adding a length to a time is a unit mismatch."
+  },
+  {
+   "q": "What is the type of `10[m] / 4[m]`?",
+   "options": [
+    "quantity",
+    "float",
+    "int",
+    "an error"
+   ],
+   "answer": 1,
+   "explain": "Dimensions cancel, leaving a plain float."
+  },
+  {
+   "q": "`float(3[m])` is\u2026",
+   "options": [
+    "3.0",
+    "0.003",
+    "an error: use `.in(\"m\")` or `.si`",
+    "3000.0"
+   ],
+   "answer": 2,
+   "explain": "Tulpa refuses to guess which unit you mean."
+  },
+  {
+   "q": "Assigning `count = 1` without `let count` first\u2026",
+   "options": [
+    "creates the variable",
+    "is an error",
+    "is ignored"
+   ],
+   "answer": 1,
+   "explain": "Undeclared assignment is an error, catching typos."
+  },
+  {
+   "q": "In an *expression* `let s = if a { 1 } \u2026 { 2 } else { 3 }`, which keyword chains the middle branch in Tulpa 3.5?",
+   "options": [
+    "`elif`",
+    "`else if`",
+    "`elsif`"
+   ],
+   "answer": 1,
+   "explain": "Expression-form if accepts `else if`; statement form accepts both."
+  },
+  {
+   "q": "What does `[3, 1, 2].sorted()` do to the original list?",
+   "options": [
+    "sorts it in place",
+    "nothing; it returns a new sorted list",
+    "reverses it"
+   ],
+   "answer": 1,
+   "explain": "`sorted()` returns a new list; `sort()` mutates."
+  },
+  {
+   "q": "`let a = [1]; let b = a; b.push(2)`. What is `a`?",
+   "options": [
+    "`[1]`",
+    "`[1, 2]`",
+    "an error"
+   ],
+   "answer": 1,
+   "explain": "Lists are shared by reference; use `.copy()`."
+  },
+  {
+   "q": "In `ensure x' == x + 1`, `x'` means\u2026",
+   "options": [
+    "the initial value",
+    "the final value of parameter x",
+    "the derivative"
+   ],
+   "answer": 1,
+   "explain": "Primed names are final values; `result'` is the return value."
+  },
+  {
+   "q": "What does `check(f, 300)` use to generate inputs?",
+   "options": [
+    "random strings",
+    "parameter annotations, filtered by `require`",
+    "define_test! blocks"
+   ],
+   "answer": 1,
+   "explain": "It fuzzes from annotations and shrinks counterexamples."
+  },
+  {
+   "q": "Which construct is edge-triggered?",
+   "options": [
+    "`always`",
+    "`when`",
+    "`while`"
+   ],
+   "answer": 1,
+   "explain": "`when` fires on false\u2192true transitions (else on true\u2192false)."
+  },
+  {
+   "q": "An `always cond else { \u2026 }` envelope is violated continuously for 5 checks. How many times does the handler run?",
+   "options": [
+    "5",
+    "1",
+    "0"
+   ],
+   "answer": 1,
+   "explain": "Once per violation; it re-arms when the condition holds again."
+  },
+  {
+   "q": "A struct field write breaks an invariant and the error is caught. The field afterwards holds\u2026",
+   "options": [
+    "the invalid value",
+    "its previous value",
+    "nil"
+   ],
+   "answer": 1,
+   "explain": "Violating writes are rolled back."
+  },
+  {
+   "q": "`type(MyStruct())` returns\u2026",
+   "options": [
+    "`\"MyStruct\"`",
+    "`\"object\"`",
+    "`\"struct\"`"
+   ],
+   "answer": 1,
+   "explain": "Use `MyStruct.name()` for the name."
+  },
+  {
+   "q": "`struct S impl Thermometer` where the method returns `[m]` instead of `[K]`:",
+   "options": [
+    "works",
+    "is rejected when S is defined",
+    "fails at the first call"
+   ],
+   "answer": 1,
+   "explain": "Return units are part of the interface contract."
+  },
+  {
+   "q": "Which machine transition applies in every state?",
+   "options": [
+    "one declared in the first state",
+    "one declared at machine level, outside states",
+    "one with a guard"
+   ],
+   "answer": 1,
+   "explain": "Machine-level `on` is global, ideal for e-stops."
+  },
+  {
+   "q": "A machine has no transition for an event in its current state. `m.send(\"x\")` returns\u2026",
+   "options": [
+    "an error",
+    "`false`",
+    "`nil`"
+   ],
+   "answer": 1,
+   "explain": "Unmatched events are ignored and report false."
+  },
+  {
+   "q": "Two awaited tasks each `sleep(1)`. Total time on the virtual clock?",
+   "options": [
+    "1 s",
+    "2 s",
+    "0 s"
+   ],
+   "answer": 1,
+   "explain": "Tasks are cooperative and run one after another."
+  },
+  {
+   "q": "An `every!(100[ms], \u2026)` body occasionally takes 250 ms. What happens to the missed ticks?",
+   "options": [
+    "they run back-to-back to catch up",
+    "they are skipped",
+    "the loop stops"
+   ],
+   "answer": 1,
+   "explain": "No catch-up bursts: safer for control."
+  },
+  {
+   "q": "`when btn.read() == 1 for 25[ms] { \u2026 }`: the button reads 1 for 10 ms, 0, then 1 for 40 ms. The body runs\u2026",
+   "options": [
+    "twice",
+    "once, 25 ms into the second press",
+    "never"
+   ],
+   "answer": 1,
+   "explain": "The timer resets when the condition drops."
+  },
+  {
+   "q": "`after trig within 300[ms] ensure resp` with no else: the response never comes. Result?",
+   "options": [
+    "nothing",
+    "the program stops with a deadline missed error",
+    "a warning"
+   ],
+   "answer": 1,
+   "explain": "Deadlines are fail-stop by default."
+  },
+  {
+   "q": "A Link publisher advertises `[m/s]`; the subscriber asks for `[km/h]`. It receives `1[m/s]` as\u2026",
+   "options": [
+    "an incompatibility error",
+    "`3.6 km/h`",
+    "`1 km/h`"
+   ],
+   "answer": 1,
+   "explain": "Same dimension: Link converts exactly."
+  },
+  {
+   "q": "Writing to `GPIO::new(4, \"in\")` with `set_high()`\u2026",
+   "options": [
+    "switches it to an output",
+    "is an error",
+    "is a no-op"
+   ],
+   "answer": 1,
+   "explain": "Writing to an input is an error."
+  },
+  {
+   "q": "In the simulator, how do you make an input pin read high?",
+   "options": [
+    "`pin.set_high()`",
+    "`sim::gpio_input(pin, 1)`",
+    "`GPIO::new(pin, \"high\")`"
+   ],
+   "answer": 1,
+   "explain": "sim hooks play the outside world."
+  },
+  {
+   "q": "An SPI `transfer([a, b, c])` returns\u2026",
+   "options": [
+    "one byte",
+    "three bytes received while sending",
+    "nothing"
+   ],
+   "answer": 1,
+   "explain": "SPI is full duplex."
+  },
+  {
+   "q": "Which PID term removes steady-state error?",
+   "options": [
+    "P",
+    "I",
+    "D"
+   ],
+   "answer": 1,
+   "explain": "The integral accumulates error until it is gone."
+  },
+  {
+   "q": "Tulpa's PID stops integrating while the output is saturated. This prevents\u2026",
+   "options": [
+    "noise",
+    "integral windup",
+    "drift"
+   ],
+   "answer": 1,
+   "explain": "Anti-windup avoids large overshoot after saturation."
+  },
+  {
+   "q": "A complementary filter fuses a gyro with an accelerometer because\u2026",
+   "options": [
+    "the gyro is noisy, the accelerometer drifts",
+    "the gyro drifts, the accelerometer is noisy short-term",
+    "accelerometers measure rate"
+   ],
+   "answer": 1,
+   "explain": "Each covers the other's weakness."
+  },
+  {
+   "q": "A behavior-tree Selector's first child fails and its second succeeds. The Selector returns\u2026",
+   "options": [
+    "FAILURE",
+    "SUCCESS",
+    "RUNNING"
+   ],
+   "answer": 1,
+   "explain": "Selectors are fallbacks."
+  },
+  {
+   "q": "In `std/plan`'s Mission, what must step handlers do?",
+   "options": [
+    "nothing; the planner applies effects",
+    "update the world with what really happened and return a status",
+    "replan"
+   ],
+   "answer": 1,
+   "explain": "Handlers report reality; the mission replans from it."
+  },
+  {
+   "q": "Why does the naive avoid-the-pillar rover from the capstone dither?",
+   "options": [
+    "the sensor is too slow",
+    "avoidance and goal-seeking alternate every tick with no committed mode",
+    "the arena is too small"
+   ],
+   "answer": 1,
+   "explain": "A state machine commits to a manoeuvre."
+  },
+  {
+   "q": "In Tulpa 3.5, which assertion form should you use?",
+   "options": [
+    "`assert!(cond)`",
+    "`assert cond, \"msg\"`",
+    "`assert(cond)`"
+   ],
+   "answer": 1,
+   "explain": "`assert` is a keyword: `assert!(c)` parses as `assert !(c)`."
+  }
+ ],
+ "capstones": [
+  {
+   "title": "Conveyor controller",
+   "prompt": "Write `machine Conveyor` with states `Stopped` (initial), `Running`, `Jammed`. Events: `start` (Stopped\u2192Running), `stop` (Running\u2192Stopped), global `jam` (\u2192Jammed), `clear` (Jammed\u2192Stopped). A motor `GPIO::new(23)` must be high exactly in `Running` (use `enter` actions). Run: start, jam, clear, start and print the state, the motor level and the history.",
+   "starter": "let motor = GPIO::new(23)\nmachine Conveyor {\n    state Stopped { }\n}\nlet c = Conveyor()",
+   "solution": "let motor = GPIO::new(23)\nmachine Conveyor {\n    on jam => Jammed\n    state Stopped { enter { motor.set_low() }; on start => Running }\n    state Running { enter { motor.set_high() }; on stop => Stopped }\n    state Jammed { enter { motor.set_low() }; on clear => Stopped }\n}\nlet c = Conveyor()\nc.start(); c.jam(); c.clear(); c.start()\nprint(c.state, motor.read(), c.history)",
+   "expect": "Running 1 [\"Stopped\", \"Running\", \"Jammed\", \"Stopped\", \"Running\"]",
+   "check": "c.jam()\nassert_eq!(motor.read(), 0)",
+   "hints": [
+    "Put `on jam => Jammed` at machine level.",
+    "Each state's `enter` sets the motor."
+   ]
+  },
+  {
+   "title": "Unit-safe stopping distance",
+   "prompt": "Write `fn stop_dist(v: [m/s], a: [m/s^2]) -> [m]` returning `v^2 / (2a)` with `require v >= 0` and `require a > 0`, and `ensure result' >= 0`. Print `stop_dist(36[km/h], 5[m/s^2])` and `check(stop_dist, 200).ok`.",
+   "starter": "fn stop_dist(v, a) {\n    0\n}",
+   "solution": "fn stop_dist(v: [m/s], a: [m/s^2]) -> [m]\n    require v >= 0\n    require a > 0\n    ensure result' >= 0\n{\n    v ** 2 / (2 * a)\n}\nprint(stop_dist(36[km/h], 5[m/s^2]))\nprint(check(stop_dist, 200).ok)",
+   "expect": "10 m\ntrue",
+   "check": "let bad = false\ntry { stop_dist(1[m], 1[m/s^2]) } catch e { bad = true }\nassert bad, \"v must be annotated as a speed\"",
+   "hints": [
+    "36 km/h is 10 m/s; 10\u00b2 / (2\u00b75) = 10 m.",
+    "Annotate both parameters and the return type."
+   ]
+  },
+  {
+   "title": "Guarded overheat response",
+   "prompt": "A `temp = signal(300)` and a `fan = GPIO::new(5)`. Add a rule that turns the fan on when temp has been above 330 for **1 s** and off when it drops (else branch), and an envelope `always temp.get() < 360` with a handler that appends \"SHUTDOWN\" to `log`. Simulate: set 335 and sleep 0.5 s, set 320, set 340 and sleep 1.5 s, set 365, set 310 and sleep 0.1. Print `fan.read()` and `log`.",
+   "starter": "let temp = signal(300)\nlet fan = GPIO::new(5)\nlet log = []",
+   "solution": "let temp = signal(300)\nlet fan = GPIO::new(5)\nlet log = []\nwhen temp.get() > 330 for 1[s] { fan.set_high(); log.push(\"fan on\") } else { fan.set_low(); log.push(\"fan off\") }\nalways temp.get() < 360 else { log.push(\"SHUTDOWN\") }\ntemp.set(335); sleep(0.5)\ntemp.set(320)\ntemp.set(340); sleep(1.5)\ntemp.set(365)\ntemp.set(310); sleep(0.1)\nprint(fan.read(), log)",
+   "expect": "0 [\"fan on\", \"SHUTDOWN\", \"fan off\"]",
+   "check": "",
+   "hints": [
+    "`when temp.get() > 330 for 1[s] { \u2026 } else { \u2026 }`.",
+    "The first 0.5 s spike is too short to turn the fan on."
+   ]
+  }
+ ]
+}

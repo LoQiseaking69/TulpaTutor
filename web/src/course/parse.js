@@ -44,7 +44,8 @@ export function parseFrontmatter(src) {
     if (i < 0) continue;
     const k = line.slice(0, i).trim();
     let v = line.slice(i + 1).trim();
-    if (/^-?\d+(\.\d+)?$/.test(v)) v = Number(v);
+    if (/^".*"$/.test(v) || /^'.*'$/.test(v)) v = v.slice(1, -1);
+    else if (/^-?\d+(\.\d+)?$/.test(v)) v = Number(v);
     meta[k] = v;
   }
   return { meta, body: src.slice(m[0].length) };

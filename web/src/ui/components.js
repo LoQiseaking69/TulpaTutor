@@ -82,7 +82,7 @@ export function plot(series) {
   const names = Object.keys(series);
   const paths = names.map((n, i) => {
     const d = series[n].pts.map((p, j) => `${j ? "L" : "M"}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join("");
-    return `<path d="${d}" fill="none" stroke="${PALETTE[i % PALETTE.length]}" stroke-width="2" stroke-linejoin="round" class="plot-line"/>`;
+    return `<path d="${d}" fill="none" stroke="${PALETTE[i % PALETTE.length]}" stroke-width="2" stroke-linejoin="round" pathLength="1" vector-effect="non-scaling-stroke" class="plot-line"/>`;
   }).join("");
   const grid = [0, 0.5, 1].map((k) => {
     const y = y0 + (y1 - y0) * k;
@@ -343,11 +343,12 @@ export function callout(b) {
 export function machineDiagram(m, current) {
   const states = m.states.map((s) => s.name);
   const n = states.length;
-  const W = 520, H = Math.max(260, 120 + n * 26);
-  const cx = W / 2, cy = H / 2, R = Math.min(W, H) / 2 - 60;
+  const R = n <= 1 ? 0 : n === 2 ? 150 : 120 + 22 * n;
+  const W = 2 * R * 1.3 + 220, H = n === 2 ? 220 : 2 * R + 150;
+  const cx = W / 2, cy = H / 2;
   const pos = Object.fromEntries(states.map((s, i) => {
-    const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-    return [s, n === 1 ? [cx, cy] : [cx + R * Math.cos(a) * 1.25, cy + R * Math.sin(a)]];
+    const a = n === 2 ? Math.PI * i : -Math.PI / 2 + (i / n) * Math.PI * 2;
+    return [s, n === 1 ? [cx, cy] : [cx + R * Math.cos(a) * 1.3, cy + R * Math.sin(a)]];
   }));
   const pairCount = {};
   const edges = m.transitions.flatMap((t) => {
@@ -363,7 +364,7 @@ export function machineDiagram(m, current) {
     }
     const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1;
     const ux = dx / len, uy = dy / len;
-    const bend = (idx % 2 ? 1 : -1) * (22 + 14 * Math.floor((idx - 1) / 2)) * (t.from < t.to ? 1 : -1);
+    const bend = (idx % 2 ? 1 : -1) * (34 + 22 * Math.floor((idx - 1) / 2)) * (t.from < t.to ? 1 : -1);
     const sx = x1 + ux * 34, sy = y1 + uy * 22, ex = x2 - ux * 38, ey = y2 - uy * 25;
     const mx = (sx + ex) / 2 - uy * bend, my = (sy + ey) / 2 + ux * bend;
     return `<path d="M${sx},${sy} Q${mx},${my} ${ex},${ey}" class="m-edge ${t.global ? "global" : ""}" marker-end="url(#arr)"/><text x="${mx}" y="${my - 4}" class="m-label">${label}</text>`;
