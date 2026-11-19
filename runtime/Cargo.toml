@@ -1,0 +1,21 @@
+[package]
+name = "tulpa_web"
+version = "1.0.0"
+edition = "2021"
+description = "WebAssembly bridge between the Tulpa runtime and TulpaTutor"
+license = "BUSL-1.1"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# A pinned TulpaLang checkout (TULPA_REF), patched by scripts/patch_tulpa_wasm.py.
+tulpa = { path = "../.build/tulpa" }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,14 @@
+node_modules/
+.build/
+runtime/target/
+web/dist/
+web/public/tulpa/
+android/app/build/
+android/.gradle/
+android/build/
+ios/App/build/
+ios/App/Pods/
+*.keystore
+*.jks
+keystore.properties
+.DS_Store
