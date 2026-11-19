@@ -95,5 +95,21 @@ for (const extra of ["challenges.json", "exam.json"]) {
   if (data.questions) checkQuiz(extra, data.questions);
 }
 
+// Explore → Examples must run cleanly
+if (!filter || "examples".includes(filter)) {
+  const { EXAMPLES } = await import("../web/src/views/examples.js");
+  for (const ex of EXAMPLES) {
+    snippets++;
+    const r = await run(ex.code);
+    if (!r.ok) fail(`example "${ex.id}"`, r.error);
+  }
+}
+
+// assert!(x) is parsed as `assert !(x)` in Tulpa 3.5; keep it out of teaching material
+for (const m of modules) for (const f of fs.readdirSync(path.join(courseDir, m)).filter((f) => f.endsWith(".md"))) {
+  const src = fs.readFileSync(path.join(courseDir, m, f), "utf8");
+  if (/\bassert!\(/.test(src.replace(/`assert!\([^`]*`/g, ""))) fail(`${m}/${f}`, "uses assert!(...) in code; use `assert cond` instead");
+}
+
 console.log(`\n${lessonCount} lessons · ${snippets} snippets · ${exercises} exercises · ${quizzes} quiz questions · ${fails ? fails + " FAILED" : "all passing"}`);
 process.exit(fails ? 1 : 0);
