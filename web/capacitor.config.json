@@ -1,0 +1,12 @@
+{
+  "appId": "dev.hermitech.tulpatutor",
+  "appName": "TulpaTutor",
+  "webDir": "dist",
+  "backgroundColor": "#040a1c",
+  "android": { "path": "../android", "backgroundColor": "#040a1c" },
+  "ios": { "path": "../ios", "backgroundColor": "#040a1c", "contentInset": "never" },
+  "plugins": {
+    "SplashScreen": { "launchAutoHide": false, "backgroundColor": "#040a1c", "showSpinner": false },
+    "StatusBar": { "overlaysWebView": false, "style": "DARK", "backgroundColor": "#040a1c" }
+  }
+}

@@ -1,0 +1,208 @@
+name: TulpaTutor (web, Android, iOS)
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish a GitHub release (tag v<VERSION>)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: tulpatutor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      build: ${{ steps.v.outputs.build }}
+      release: ${{ steps.v.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_PUBLISH: ${{ inputs.publish }}
+        run: |
+          v="$(tr -d ' \n' < VERSION)"; release=false
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF#refs/tags/v}"; release=true
+          elif [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && [ "$INPUT_PUBLISH" = true ]; then release=true
+          elif [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/main ] && \
+               ! gh release view "v$v" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then release=true   # VERSION bumped
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "build=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+          echo "TulpaTutor $v (release=$release)"
+
+  web:
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: wasm32-unknown-unknown }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: runtime }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json }
+
+      - name: Build tulpa.wasm from the pinned TulpaLang (TULPA_REF)
+        run: scripts/build-wasm.sh
+
+      - name: Install
+        working-directory: web
+        run: npm ci
+
+      - name: Validate the course against the runtime (every snippet, exercise, quiz, example)
+        run: node scripts/check-course.mjs
+
+      - name: Build the web app
+        working-directory: web
+        run: npx vite build
+
+      - uses: actions/upload-artifact@v4
+        with: { name: web-dist, path: web/dist }
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+        with: { path: web/dist }
+
+  pages:
+    needs: web
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: { name: github-pages, url: "${{ steps.deploy.outputs.page_url }}" }
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  apk:
+    needs: [version, web]
+    runs-on: ubuntu-latest
+    outputs:
+      signed: ${{ steps.sign.outputs.signed }}
+    env:
+      TT_VERSION: ${{ needs.version.outputs.version }}
+      TT_BUILD: ${{ needs.version.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "21", cache: gradle }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json }
+      - uses: actions/download-artifact@v4
+        with: { name: web-dist, path: web/dist }
+      - name: Sync web app into the Android project
+        working-directory: web
+        run: npm ci && npx cap sync android
+
+      - name: Release signing key
+        id: sign
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::No KEYSTORE_BASE64 secret: the APK is signed with a debug key (installable, not publishable)."
+            exit 0
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | tr -d ' \r\n\t' | base64 -d > android/release.jks
+          KP="${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
+          keytool -list -keystore android/release.jks -storepass "$KEYSTORE_PASSWORD" > /tmp/ks.txt 2>&1 || { echo "::error::KEYSTORE_PASSWORD does not open KEYSTORE_BASE64"; exit 1; }
+          grep -q "Keystore type: PKCS12" /tmp/ks.txt && KP="$KEYSTORE_PASSWORD"
+          ALIAS="$KEY_ALIAS"
+          [ -z "$ALIAS" ] && ALIAS="$(keytool -list -v -keystore android/release.jks -storepass "$KEYSTORE_PASSWORD" 2>/dev/null | sed -n 's/^Alias name: //p' | head -1)"
+          printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PASSWORD" "$ALIAS" "$KP" > android/keystore.properties
+          echo "::add-mask::$KEYSTORE_PASSWORD"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Assemble APK
+        working-directory: android
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Collect
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/TulpaTutor-$TT_VERSION.apk"
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs dist/*.apk | grep -E "DN:|SHA-256" || true
+          ls -la dist
+      - uses: actions/upload-artifact@v4
+        with: { name: TulpaTutor-apk, path: dist/*.apk }
+
+  ipa:
+    needs: [version, web]
+    runs-on: macos-15
+    env:
+      TT_VERSION: ${{ needs.version.outputs.version }}
+      TT_BUILD: ${{ needs.version.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json }
+      - uses: actions/download-artifact@v4
+        with: { name: web-dist, path: web/dist }
+      - name: Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)" && xcodebuild -version
+      - name: Sync web app into the iOS project
+        working-directory: web
+        run: npm ci && npx cap sync ios
+
+      - name: Build (unsigned, for sideloading)
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath ios/build \
+            MARKETING_VERSION="$TT_VERSION" CURRENT_PROJECT_VERSION="$TT_BUILD" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build | tail -30
+
+      - name: Package IPA
+        run: |
+          APP=$(find ios/build/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -1)
+          mkdir -p Payload dist && cp -R "$APP" Payload/
+          codesign --force --deep --sign - Payload/*.app   # ad-hoc; sideloading tools re-sign
+          zip -qry "dist/TulpaTutor-$TT_VERSION.ipa" Payload
+          shasum -a 256 dist/*.ipa | tee "dist/TulpaTutor-$TT_VERSION.ipa.sha256"
+      - uses: actions/upload-artifact@v4
+        with: { name: TulpaTutor-ipa, path: dist/* }
+
+  release:
+    needs: [version, web, apk, ipa]
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: dl }
+      - name: Gather
+        run: |
+          mkdir -p out
+          cp dl/TulpaTutor-apk/*.apk dl/TulpaTutor-ipa/* out/
+          (cd dl/web-dist && zip -qr "../../out/TulpaTutor-web-${{ needs.version.outputs.version }}.zip" .)
+          ls -la out
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.version.outputs.version }}
+          name: TulpaTutor ${{ needs.version.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          files: out/*
+          body: |
+            **TulpaTutor**: learn the Tulpa language with the real runtime, on the web, Android and iOS.
+
+            - **Web**: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+            - **Android**: install `TulpaTutor-${{ needs.version.outputs.version }}.apk` (Android 8.0+). ${{ needs.apk.outputs.signed == 'true' && 'Signed with the HermiTech release key.' || 'Debug-signed build (add the KEYSTORE_* secrets for release signing).' }}
+            - **iPhone/iPad**: sideload `TulpaTutor-${{ needs.version.outputs.version }}.ipa` with AltStore, SideStore or Sideloadly (iOS 15+).
+            - **Self-host**: unzip the web build onto any static file server.

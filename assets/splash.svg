@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="60%"><stop offset="0" stop-color="#11225c"/><stop offset="1" stop-color="#040a1c"/></radialGradient>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#67e8f9"/><stop offset=".5" stop-color="#3b82f6"/><stop offset="1" stop-color="#a855f7"/></linearGradient>
+    <linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c4b5fd"/><stop offset="1" stop-color="#4f46e5"/></linearGradient>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#bg)"/>
+  <g transform="translate(1046 980) scale(10)">
+    <path d="M6 10 L58 10 L52 22 L38 22 L32 30 L26 22 L12 22 Z" fill="url(#a)"/>
+    <path d="M26 22 L32 30 L38 22 L36 50 L32 58 L28 50 Z" fill="url(#b)"/>
+  </g>
+  <text x="1366" y="1720" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="150" fill="#e0e7ff" letter-spacing="12">TULPATUTOR</text>
+  <text x="1366" y="1840" text-anchor="middle" font-family="sans-serif" font-size="80" fill="#93c5fd">Think. Code. Build.</text>
+</svg>
