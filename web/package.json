@@ -1,0 +1,36 @@
+{
+  "name": "tulpatutor",
+  "private": true,
+  "version": "1.0.0",
+  "description": "TulpaTutor: learn the Tulpa language with the real runtime in your browser and on Android and iOS",
+  "license": "BUSL-1.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check:course": "node ../scripts/check-course.mjs"
+  },
+  "dependencies": {
+    "@capacitor/app": "^7.1.2",
+    "@capacitor/core": "^7.6.10",
+    "@capacitor/haptics": "^7.0.5",
+    "@capacitor/preferences": "^7.0.4",
+    "@capacitor/splash-screen": "^7.0.5",
+    "@capacitor/status-bar": "^7.0.6",
+    "@codemirror/autocomplete": "^6.20.4",
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/language": "^6.13.1",
+    "@codemirror/search": "^6.7.2",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.15",
+    "@lezer/highlight": "^1.2.5",
+    "marked": "^15.0.12",
+    "vite": "^6.4.6"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.6.10",
+    "@capacitor/cli": "^7.6.10",
+    "@capacitor/ios": "^7.6.10"
+  }
+}
