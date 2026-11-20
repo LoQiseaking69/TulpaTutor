@@ -1,0 +1,85 @@
+/* Animated startup (web/src/ui/intro.js). The critical "black screen" rule is inlined in
+   index.html so the first paint already matches the native launch screen. */
+.intro {
+  position: fixed; inset: 0; z-index: 9999; background: #000; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4vh;
+  padding: var(--safe-top) 0 var(--safe-bottom); user-select: none; -webkit-user-select: none; touch-action: none;
+}
+.intro::before {
+  /* faint violet bloom behind the logo */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(60vmin 45vmin at 50% 46%, rgba(88, 40, 210, .28), transparent 70%);
+  opacity: 0; transition: opacity 1.2s ease-out;
+}
+.intro.live::before { opacity: 1; }
+
+.intro-stage { position: relative; width: min(94vw, 600px, 118vh); aspect-ratio: 688 / 500; will-change: transform, opacity; }
+.intro .il, .intro .il img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+.intro .il { opacity: 0; }
+.intro .l-raven, .intro .l-word { opacity: 1; }
+.intro .l-raven img, .intro .l-word img { opacity: 0; }
+
+/* circuits only: the centre (Tutor + wordmark) stays dark until their own entrances */
+.intro .l-power {
+  -webkit-mask-image: radial-gradient(ellipse 46% 50% at 50% 42%, transparent 66%, #000 100%), linear-gradient(to bottom, #000 38%, transparent 45% 80%, #000 88%);
+  -webkit-mask-composite: source-in;
+  mask-image: radial-gradient(ellipse 46% 50% at 50% 42%, transparent 66%, #000 100%), linear-gradient(to bottom, #000 38%, transparent 45% 80%, #000 88%);
+  mask-composite: intersect;
+}
+/* Tutor only: top of the logo, feathered so no seams show while it moves */
+.intro .l-raven { transform-origin: 50% 40%; }
+.intro .l-raven img {
+  transform-origin: 50% 45%;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0 48%, transparent 60%), linear-gradient(to right, transparent 12%, #000 24% 76%, transparent 88%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, #000 0 48%, transparent 60%), linear-gradient(to right, transparent 12%, #000 24% 76%, transparent 88%);
+  mask-composite: intersect;
+}
+/* wordmark band */
+.intro .l-word { clip-path: inset(44% 100% 22% 0); }
+.intro .l-word img {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 42%, #000 49% 74%, transparent 80%);
+  mask-image: linear-gradient(to bottom, transparent 42%, #000 49% 74%, transparent 80%);
+  filter: drop-shadow(0 0 10px rgba(255, 40, 40, .55));
+}
+
+.intro-bolts { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.intro-bolts path {
+  fill: none; stroke: #ff3b3b; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; filter: url(#ib-glow);
+}
+.intro-flash {
+  position: absolute; inset: -30% -20%; pointer-events: none; opacity: 0;
+  background: radial-gradient(closest-side at 50% 62%, rgba(255, 235, 235, .9), rgba(255, 50, 50, .35) 45%, transparent 75%);
+  mix-blend-mode: screen;
+}
+.intro-glint {
+  position: absolute; width: 7%; aspect-ratio: 1; opacity: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 46%, #fff 50%, transparent 54%),
+    linear-gradient(0deg, transparent 46%, #fff 50%, transparent 54%),
+    radial-gradient(circle, #fff 0 8%, rgba(255, 255, 255, .5) 16%, transparent 40%);
+  filter: drop-shadow(0 0 4px #fff);
+}
+.intro-glint.g1 { left: 47.6%; top: 18.6%; }
+.intro-glint.g2 { left: 59.4%; top: 24.4%; }
+
+.intro-sparks { position: absolute; left: 50%; top: 48%; width: 0; height: 0; pointer-events: none; }
+.intro-sparks i {
+  position: absolute; left: 0; top: 0; width: 5px; height: 5px; border-radius: 50%; opacity: 0;
+  background: hsl(var(--h) 100% 70%); box-shadow: 0 0 8px 2px hsl(var(--h) 100% 60% / .8);
+}
+
+.intro-foot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; opacity: 0; }
+.intro-tag { margin: 0; font: 600 12px/1 var(--sans); letter-spacing: .42em; color: #c9b8ff; text-shadow: 0 0 12px rgba(140, 90, 255, .8); padding-left: .42em; }
+.intro-tag b { color: #ff4d4d; text-shadow: 0 0 10px rgba(255, 50, 50, .9); }
+.intro-bar { width: min(52vw, 220px); height: 3px; border-radius: 3px; background: rgba(120, 100, 255, .16); overflow: hidden; }
+.intro-bar i { display: block; height: 100%; transform: scaleX(0); transform-origin: left;
+  background: linear-gradient(90deg, #22d3ee, #6d4cff 55%, #ff3b3b); box-shadow: 0 0 10px rgba(130, 90, 255, .9); }
+
+.intro-skip {
+  position: absolute; bottom: calc(18px + var(--safe-bottom)); left: 50%; transform: translateX(-50%);
+  background: none; border: 0; color: #8f86b8; font: 500 11px var(--sans); letter-spacing: .12em; text-transform: uppercase; opacity: 0;
+}
+
+html.intro-on, html.intro-on body { overflow: hidden; }

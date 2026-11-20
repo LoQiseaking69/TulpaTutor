@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="intro-on">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,9 +8,12 @@
   <link rel="icon" href="favicon.png" type="image/png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="brand/startup.webp" as="image" type="image/webp">
+  <style>#intro{position:fixed;inset:0;z-index:9999;background:#000}</style>
   <title>TulpaTutor · Learn TULPA</title>
 </head>
 <body>
+  <div id="intro" aria-hidden="true"></div>
   <div id="app"></div>
   <script type="module" src="/src/main.js"></script>
 </body>

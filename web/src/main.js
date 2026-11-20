@@ -1,10 +1,12 @@
 import "./styles/base.css";
 import "./styles/app.css";
+import "./styles/intro.css";
 import { Capacitor } from "@capacitor/core";
 import { icon, logo } from "./ui/icons.js";
 import { h, esc } from "./ui/components.js";
 import { installTapHaptics, installRipples, haptic, stagger, motionReduced } from "./ui/fx.js";
 import { brand } from "./ui/tutor.js";
+import { startIntro } from "./ui/intro.js";
 import { state, subscribe, levelInfo, unread, hydrate, checkAchievements, save, addStudyTime, markAllRead } from "./state.js";
 import { runtime } from "./runtime/client.js";
 import { showOnboarding, showAchievementToasts } from "./views/modals.js";
@@ -33,6 +35,16 @@ const NAV = [
   ["settings", "Settings", "gear"],
 ];
 const TABS = [["home", "Home", "home"], ["map", "Course", "map"], ["practice", "Practice", "target"], ["explore", "Explore", "cube"], ["progress", "Me", "user"]];
+
+// Animated startup plays over everything while the app boots behind it.
+const intro = startIntro({ reduced: matchMedia("(prefers-reduced-motion: reduce)").matches });
+intro.started.then(hideNativeSplash);
+
+async function hideNativeSplash() {
+  if (!Capacitor.isNativePlatform()) return;
+  // native launch screen and the intro's first frame are both black: swap with no fade
+  try { const { SplashScreen } = await import("@capacitor/splash-screen"); await SplashScreen.hide({ fadeOutDuration: 0 }); } catch { /* optional */ }
+}
 
 const app = document.getElementById("app");
 app.innerHTML = `
@@ -157,7 +169,6 @@ async function nativeSetup() {
       else if (!canGoBack) App.exitApp();
     });
   } catch { /* optional */ }
-  try { const { SplashScreen } = await import("@capacitor/splash-screen"); await SplashScreen.hide({ fadeOutDuration: 300 }); } catch { /* optional */ }
 }
 
 (async () => {
@@ -165,9 +176,12 @@ async function nativeSetup() {
   checkAchievements();
   save();
   renderChrome();
+  if (!state.settings.motion) intro.skip();
   await route();
   nativeSetup();
-  runtime.ready(); // warm the runtime in the background
+  intro.ready();
+  await intro.done;
+  runtime.ready(); // warm the runtime in the background (after the intro, so it stays smooth)
   if (!state.onboarded) showOnboarding();
   void haptic;
 })();

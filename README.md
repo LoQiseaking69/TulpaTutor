@@ -41,6 +41,12 @@ oops). The poses were generated to match the logo; full-resolution versions are 
 Figma file *TulpaTutor mascot poses*. `scripts/make-brand.sh` regenerates every app icon,
 splash screen and web image from these.
 
+On launch, an animated startup (`web/src/ui/intro.js`) powers up the wings-spread logo
+(`assets/brand/tulpatutor-startup.jpg`): circuits charge, the Tutor rises and flaps, red
+lightning ignites the wordmark, with haptics at each beat. The native launch screens are
+plain black so they hand off to it seamlessly. Tap to skip; reduced motion (system or the
+in-app setting) gets a short fade.
+
 ## Layout
 
 ```

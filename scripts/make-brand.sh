@@ -41,6 +41,12 @@ convert /tmp/tt-icon-1024.png -resize 64x64 web/public/favicon.png
 convert /tmp/tt-logo-soft.png -resize 900x -quality 86 $P/logo.webp
 convert $B/head.png -resize 256x256 -quality 88 $P/head.webp
 for m in celebrate think oops wave; do convert $B/mascot-$m.jpg -quality 90 $P/mascot-$m.webp; done
+# startup animation: the wings-spread logo, edges feathered into black (web/src/ui/intro.js)
+convert $B/tulpatutor-startup.jpg -crop 688x500+0+520 +repage \
+  \( -size 688x500 xc:black -fill white -draw "roundrectangle 24,18 664,482 90,90" -blur 0x22 \) -alpha off -compose Multiply -composite \
+  -quality 90 $P/startup.webp
+# native launch screens are plain black so they hand off seamlessly to the startup animation
+for f in $R/drawable*/splash.png $I/Splash.imageset/*.png; do convert "$f" -fill black -colorize 100 "$f"; done
 # 8-bit, opaque where possible, max compression (ImageMagick otherwise writes 16-bit RGBA)
 for f in $R/mipmap-*/ic_launcher.png $R/mipmap-*/ic_launcher_foreground.png $R/drawable*/splash.png $I/AppIcon.appiconset/*.png $I/Splash.imageset/*.png web/public/icon-*.png web/public/apple-touch-icon.png web/public/favicon.png; do
   convert "$f" -background "$BG" -alpha remove -alpha off -depth 8 -strip -define png:compression-level=9 "PNG24:$f"
