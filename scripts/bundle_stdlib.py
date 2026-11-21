@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Packs TulpaLang's stdlib/ into one JSON map {"/std/<path>.rav": source} for the browser."""
+"""Packs Tulpa's stdlib/ into one JSON map {"/std/<path>.rav": source} for the browser."""
 import json
 import pathlib
 import sys

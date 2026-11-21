@@ -10,7 +10,7 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-# A pinned TulpaLang checkout (TULPA_REF), patched by scripts/patch_tulpa_wasm.py.
+# A pinned Tulpa checkout (TULPA_REF), patched by scripts/patch_tulpa_wasm.py.
 tulpa = { path = "../.build/tulpa" }
 
 [profile.release]

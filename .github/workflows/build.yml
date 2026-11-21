@@ -59,7 +59,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm, cache-dependency-path: web/package-lock.json }
 
-      - name: Build tulpa.wasm from the pinned TulpaLang (TULPA_REF)
+      - name: Build tulpa.wasm from the pinned Tulpa (TULPA_REF)
         run: scripts/build-wasm.sh
 
       - name: Install

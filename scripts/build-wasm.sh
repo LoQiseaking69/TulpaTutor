@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Builds web/public/tulpa/tulpa.wasm and the stdlib bundle from the pinned TulpaLang (TULPA_REF).
+# Builds web/public/tulpa/tulpa.wasm and the stdlib bundle from the pinned Tulpa (TULPA_REF).
 #
-#   scripts/build-wasm.sh                 # fetch TulpaLang at TULPA_REF into .build/tulpa
-#   TULPA_SRC=../TulpaLang scripts/build-wasm.sh   # use a local checkout instead (copied)
+#   scripts/build-wasm.sh                 # fetch Tulpa at TULPA_REF into .build/tulpa
+#   TULPA_SRC=../Tulpa scripts/build-wasm.sh   # use a local checkout instead (copied)
 #
 # Needs Rust with the wasm32-unknown-unknown target (`rustup target add wasm32-unknown-unknown`).
 # Set TULPA_BUILD_STD=1 to build std from rust-src instead (offline toolchains without the target).
@@ -18,7 +18,7 @@ if [ -n "${TULPA_SRC:-}" ]; then
 elif [ ! -f "$DEST/.ref" ] || [ "$(cat "$DEST/.ref")" != "$REF" ]; then
   rm -rf "$DEST" && mkdir -p "$DEST"
   git -C "$DEST" init -q
-  git -C "$DEST" remote add origin https://github.com/LoQiseaking69/TulpaLang
+  git -C "$DEST" remote add origin https://github.com/LoQiseaking69/Tulpa
   git -C "$DEST" fetch -q --depth 1 origin "$REF"
   git -C "$DEST" checkout -q FETCH_HEAD
   echo "$REF" > "$DEST/.ref"

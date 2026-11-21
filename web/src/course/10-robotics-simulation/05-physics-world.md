@@ -110,7 +110,7 @@ A proportional slow-down gives a smooth, collision-free stop.
 :::note Driver in the loop
 `std/world` combines with `std/emu`: an emulated IMU fed by `r.imu()` and an emulated PWM chip
 whose pulses drive `r.drive(...)`, so your *real drivers* run in the loop. See
-`examples/sim_rover` in the TulpaLang repository.
+`examples/sim_rover` in the Tulpa repository.
 :::
 
 ```quiz

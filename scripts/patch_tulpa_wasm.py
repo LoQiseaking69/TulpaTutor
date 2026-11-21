@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare a TulpaLang checkout for wasm32-unknown-unknown.
+"""Prepare a Tulpa checkout for wasm32-unknown-unknown.
 
 Usage: patch_tulpa_wasm.py <tulpalang-dir>
 

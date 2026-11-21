@@ -32,7 +32,7 @@ export async function render() {
       <h3>About</h3>
       <p><b>TulpaTutor</b> runs the real Tulpa runtime <b class="ver">…</b> compiled to WebAssembly, on the web, Android and iOS.
       Tulpa and TulpaTutor are made by HermiTech LLC and licensed under the Business Source License 1.1.</p>
-      <p class="muted">Language source: <a href="https://github.com/LoQiseaking69/TulpaLang" target="_blank" rel="noopener">github.com/LoQiseaking69/TulpaLang</a></p>
+      <p class="muted">Language source: <a href="https://github.com/LoQiseaking69/Tulpa" target="_blank" rel="noopener">github.com/LoQiseaking69/Tulpa</a></p>
     </section>
   </div>`);
   runtime.version().then((v) => (el.querySelector(".ver").textContent = typeof v === "string" ? v : ""));

@@ -1,6 +1,6 @@
 # TulpaTutor
 
-**Learn [Tulpa](https://github.com/LoQiseaking69/TulpaLang), the language for robotics and
+**Learn [Tulpa](https://github.com/LoQiseaking69/Tulpa), the language for robotics and
 embedded systems, with the real runtime running on your device.** Web app, Android and iOS.
 
 <p align="center">
@@ -53,7 +53,7 @@ in-app setting) gets a short fade.
 runtime/            Rust cdylib: C-ABI bridge from tulpa::embed to WebAssembly (no wasm-bindgen)
   shim/             wtime.rs (browser clock) and wfs.rs (in-memory /std and /work files)
 scripts/
-  build-wasm.sh     fetch TulpaLang at TULPA_REF, patch, build web/public/tulpa/tulpa.wasm + stdlib.json
+  build-wasm.sh     fetch Tulpa at TULPA_REF, patch, build web/public/tulpa/tulpa.wasm + stdlib.json
   patch_tulpa_wasm.py   the wasm patch (behaviour-neutral on native targets)
   check-course.mjs  runs the whole course against the runtime (CI gate)
   tulpa-run.mjs     run a .rav file on the wasm runtime from Node
@@ -64,7 +64,7 @@ web/                the app (Vite, vanilla JS, CodeMirror 6, Capacitor)
   src/views/        home, map, lesson, practice, explore, challenges, progress, settings, cert
 android/  ios/      Capacitor 7 native projects (dev.hermitech.tulpatutor)
 content-src/        Python sources for challenges.json and exam.json
-TULPA_REF           the TulpaLang commit the app is built against
+TULPA_REF           the Tulpa commit the app is built against
 VERSION             app version; bump on main to publish a release
 ```
 
@@ -72,7 +72,7 @@ VERSION             app version; bump on main to publish a release
 
 ```sh
 rustup target add wasm32-unknown-unknown
-scripts/build-wasm.sh                 # or TULPA_SRC=../TulpaLang scripts/build-wasm.sh
+scripts/build-wasm.sh                 # or TULPA_SRC=../Tulpa scripts/build-wasm.sh
 cd web && npm ci
 node ../scripts/check-course.mjs      # every snippet, exercise, quiz and example
 npx vite                              # dev server
