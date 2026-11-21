@@ -118,7 +118,7 @@ jobs:
         run: |
           if [ -z "$KEYSTORE_BASE64" ]; then
             echo "signed=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::No KEYSTORE_BASE64 secret: the APK is signed with a debug key (installable, not publishable)."
+            echo "::warning::No KEYSTORE_BASE64 secret: the APK is signed with the fixed sideload key (android/signing/sideload.jks)."
             exit 0
           fi
           printf '%s' "$KEYSTORE_BASE64" | tr -d ' \r\n\t' | base64 -d > android/release.jks

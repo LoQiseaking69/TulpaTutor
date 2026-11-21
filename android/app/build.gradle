@@ -34,11 +34,19 @@ android {
                 keyPassword keystoreProps["keyPassword"]
             }
         }
+        // Fixed sideload key committed to the repo (android/signing/sideload.jks). Every CI build is signed
+        // with the same certificate, so a new APK installs over the previous one. The old fallback, the
+        // runner's throwaway debug key, changed every build and Android refused the update.
+        sideload {
+            storeFile rootProject.file("signing/sideload.jks")
+            storePassword "tulpatutor"
+            keyAlias "tulpatutor"
+            keyPassword "tulpatutor"
+        }
     }
     buildTypes {
         release {
-            // without a release keystore the APK is signed with the debug key (installable, not publishable)
-            signingConfig keystoreFile.exists() ? signingConfigs.release : signingConfigs.debug
+            signingConfig keystoreFile.exists() ? signingConfigs.release : signingConfigs.sideload
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

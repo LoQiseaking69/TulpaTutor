@@ -81,7 +81,7 @@ npx cap sync                          # copy into android/ and ios/
 ```
 
 - **Android**: `cd android && ./gradlew assembleRelease` (JDK 21, Android SDK). Signed with
-  `android/keystore.properties` if present, otherwise the debug key.
+  `android/keystore.properties` if present, otherwise the fixed sideload key in `android/signing/` (same certificate every build, so updates install over the last APK).
 - **iOS**: open `ios/App/App.xcodeproj` in Xcode 16 (Swift Package Manager, iOS 15+).
 
 ## CI and releases

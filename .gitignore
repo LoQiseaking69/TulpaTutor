@@ -10,5 +10,6 @@ ios/App/build/
 ios/App/Pods/
 *.keystore
 *.jks
+!android/signing/sideload.jks
 keystore.properties
 .DS_Store
